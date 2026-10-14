@@ -1,10 +1,17 @@
-from src.modules.auth.student.functions import login_student, register_student, logout_student
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.configs.database import get_db
 from fastapi import APIRouter, Depends
-from src.modules.auth.student.interface import Create_Student, Update_Student, Login_Student
-
 from fastapi.responses import Response
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.configs.database import get_db
+from src.modules.auth.student.functions import (
+    login_student,
+    logout_student,
+    register_student,
+)
+from src.modules.auth.student.interface import (
+    Create_Student,
+    Login_Student,
+)
 
 student_router = APIRouter(tags=["Student"])
 

@@ -2,13 +2,15 @@ from .models import Admin
 from .interface import Create_Admin, Admin_login
 from fastapi.responses import JSONResponse, Response
 
+from jose import JWTError, jwt
+from src.utils.jwt import ALGORITHM, SECRET_KEY
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from utils.jwt import create_access_token, create_refresh_token
 from utils.security import hash_password, verify_password
 from utils.validations import validate_email, validate_password
-
 
 
 async def register_admin(data: Create_Admin, db: AsyncSession):
@@ -40,7 +42,6 @@ async def register_admin(data: Create_Admin, db: AsyncSession):
     return admin
 
 
-
 async def login_admin(data : Admin_login, response : Response, db : AsyncSession):
 
     result = await db.execute(select(Admin).where(Admin.email == data.email))
@@ -61,9 +62,10 @@ async def login_admin(data : Admin_login, response : Response, db : AsyncSession
 
     role = "admin"
     
-    access_token = create_access_token(Admin.id, role),
+    access_token = create_access_token(Admin.id, role)
     refresh_token = create_refresh_token(Admin.id, role)
 
+    print(refresh_token)
 
     response.set_cookie(
         key="access_token",
@@ -82,7 +84,7 @@ async def login_admin(data : Admin_login, response : Response, db : AsyncSession
         secure=False,  
         samesite="lax",
         max_age=7 * 24 * 60 * 60,
-        path="/auth",
+        path="/",
     )
 
     return {"message": "Login successful"}
@@ -106,3 +108,5 @@ async def logout(response: Response):
     )
 
     return {"message": "Logout successful"}
+
+

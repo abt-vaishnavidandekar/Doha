@@ -1,13 +1,16 @@
-from src.modules.auth.student.models import Student
-from src.modules.auth.student.interface import Create_Student, Update_Student, Login_Student
-from fastapi.responses import JSONResponse, Response
-
 from fastapi import HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.modules.auth.student.interface import (
+    Create_Student,
+    Login_Student,
+)
+from src.modules.auth.student.models import Student
 from utils.jwt import create_access_token, create_refresh_token
 from utils.security import hash_password, verify_password
-from utils.validations import validate_email, validate_password, check_phone
+from utils.validations import check_phone, validate_email, validate_password
 
 
 async def register_student(data: Create_Student, db:AsyncSession):
@@ -81,7 +84,7 @@ async def login_student(data : Login_Student, response : Response, db : AsyncSes
         secure=False,  
         samesite="lax",
         max_age=7 * 24 * 60 * 60,
-        path="/auth",
+        path="/",
     )
 
     return {"message": "Login successful"}
@@ -99,7 +102,7 @@ async def logout_student(response: Response):
 
     response.delete_cookie(
         key="refresh_token",
-        path="/auth",
+        path="/",
         httponly=True,
         samesite="lax",
     )

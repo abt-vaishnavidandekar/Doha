@@ -1,8 +1,23 @@
 import re
-from fastapi.responses import JSONResponse
-from fastapi import status, HTTPException
+
+from fastapi import HTTPException
 
 
+def check_date(value):
+    if not re.fullmatch(r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", value):
+        raise HTTPException(
+            status_code=400,
+            detail= "Date format should be in the form of YYYY-MM-DD",
+        )     
+    return value
+
+def check_time(value):
+    if not re.fullmatch(r"^([01]\d|2[0-3]):[0-5]\d$", value):
+        raise HTTPException(
+            status_code=400,
+            detail= "Time format should be in the form of HH:MM",
+        )     
+    return value
 
 def check_phone(value):
     if not re.fullmatch(r"[6-9]\d{9}", value):

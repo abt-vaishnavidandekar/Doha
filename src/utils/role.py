@@ -1,17 +1,17 @@
-from fastapi import Cookie, Depends, status, HTTPException
+from fastapi import Cookie, Depends, status
 from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from configs.database import get_db
-from modules.auth.admin.models import Admin
-from modules.auth.student.models import Student
-from utils.jwt import ALGORITHM, SECRET_KEY
+from src.modules.auth.admin.models import Admin
+from src.modules.auth.student.models import Student
+from src.utils.jwt import SECRET_KEY, ALGORITHM
 
 
 async def get_current_user(
-    access_token : str | None = Cookie(default=None),
+    access_token: str | None = Cookie(default=None),
     db: AsyncSession = Depends(get_db),
 ):
     if not access_token:

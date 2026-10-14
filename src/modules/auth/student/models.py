@@ -1,8 +1,9 @@
-from sqlalchemy import String, Boolean, func, Integer, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from src.modules.course.base.admin.models import Course
-from src.configs.model import Base
 from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.configs.model import Base
 
 
 class Student(Base):

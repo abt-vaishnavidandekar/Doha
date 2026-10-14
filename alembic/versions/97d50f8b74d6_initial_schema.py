@@ -1,8 +1,8 @@
-"""testing alembic migration.
+"""initial schema
 
-Revision ID: 0af6935fcf2d
-Revises: 
-Create Date: 2026-10-13 15:48:40.346943
+Revision ID: 97d50f8b74d6
+Revises: 81d2eb12699f
+Create Date: 2026-10-14 15:19:08.999197
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0af6935fcf2d'
-down_revision: Union[str, Sequence[str], None] = None
+revision: str = '97d50f8b74d6'
+down_revision: Union[str, Sequence[str], None] = '81d2eb12699f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -28,6 +28,7 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=50), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('active_at', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -36,6 +37,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=50), nullable=False),
     sa.Column('description', sa.String(length=200), nullable=False),
     sa.Column('overview', sa.String(length=750), nullable=False),
+    sa.Column('document', sa.String(), nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('active_at', sa.Boolean(), nullable=False),
@@ -56,25 +58,27 @@ def upgrade() -> None:
     )
     op.create_table('batches',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('batch_name', sa.String(), nullable=False),
     sa.Column('date_field', sa.String(), nullable=False),
     sa.Column('starting_time', sa.String(), nullable=False),
     sa.Column('ending_time', sa.String(), nullable=False),
-    sa.Column('student_id', sa.Integer(), nullable=False),
+    sa.Column('seats', sa.Integer(), nullable=False),
     sa.Column('course_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('active_at', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
-    sa.ForeignKeyConstraint(['student_id'], ['students.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('enrollments',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('student_id', sa.Integer(), nullable=False),
     sa.Column('course_id', sa.Integer(), nullable=False),
+    sa.Column('batch_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('active_at', sa.Boolean(), nullable=False),
+    sa.ForeignKeyConstraint(['batch_id'], ['batches.id'], ),
     sa.ForeignKeyConstraint(['course_id'], ['courses.id'], ),
     sa.ForeignKeyConstraint(['student_id'], ['students.id'], ),
     sa.PrimaryKeyConstraint('id')

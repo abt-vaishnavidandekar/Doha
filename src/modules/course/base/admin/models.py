@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, Boolean, DateTime, String, func
+from sqlalchemy import TIMESTAMP, Boolean, DateTime, String, func, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.configs.model import Base
@@ -9,7 +9,7 @@ from src.configs.model import Base
 class Course(Base):
     __tablename__ = "courses"
 
-    id : Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id : Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name : Mapped[str] = mapped_column(String(50))
     description : Mapped[str] = mapped_column(String(200))
     overview : Mapped[str] = mapped_column(String(750))

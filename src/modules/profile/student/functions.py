@@ -15,12 +15,23 @@ async def get_student_detail(email : str, db:AsyncSession):
     student = result.scalar_one_or_none()
 
     if not student:
-        raise HTTPException(
-            status_code=404,
-            detail="Student with this email not found"
+        return JSONResponse(
+            status_code = status.HTTP_404_NOT_FOUND,
+            content = {
+                "sucess" : False,
+                "msg" : "Student with this email not found"
+            }
         )
 
-    return student
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "success": True,
+            "msg" : "Data featch successfully",
+            "student" : student
+        }
+
+    )
 
 
 
@@ -30,6 +41,7 @@ async def update_student_datails(data: Update_Student, db: AsyncSession):
         student_fetch_query = await db.execute(
             select(Student).where(Student.id == data.id)
         )
+
         student = student_fetch_query.scalar_one_or_none()
         if not student:
             return JSONResponse(

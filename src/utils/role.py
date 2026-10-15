@@ -1,4 +1,4 @@
-from fastapi import Cookie, Depends, status
+from fastapi import Cookie, Depends, status, HTTPException
 from fastapi.responses import JSONResponse
 from jose import JWTError, jwt
 from sqlalchemy import select
@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from configs.database import get_db
 from src.modules.auth.admin.models import Admin
 from src.modules.auth.student.models import Student
-from src.utils.jwt import SECRET_KEY, ALGORITHM
+from src.configs.env import SECRET_KEY, ALGORITHM
 
 
 async def get_current_user(
@@ -71,3 +71,21 @@ async def get_current_user(
         )
 
     return user
+
+
+def get_current_admin(current_user = Depends(get_current_user)):
+    if not isinstance(current_user, Admin):
+        raise HTTPException(
+            status_code=403,
+            detail="Admin Access Required"
+        )
+
+
+
+
+def get_current_student(current_user = Depends(get_current_user)):
+    if not isinstance(current_user, Student):
+        raise HTTPException(
+            status_code=403,
+            detail="Student Access Required"
+        )

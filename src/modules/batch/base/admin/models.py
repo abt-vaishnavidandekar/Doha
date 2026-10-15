@@ -11,7 +11,8 @@ class Batch(Base):
 
     id : Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     batch_name : Mapped[str] = mapped_column(String)
-    date_field : Mapped[str] = mapped_column(String, nullable=False)
+    start_date : Mapped[str] = mapped_column(String, nullable=False)
+    end_date : Mapped[str] = mapped_column(String, nullable=False)
     starting_time : Mapped[str] = mapped_column(String)
     ending_time : Mapped[str] = mapped_column(String)
     seats : Mapped[int] = mapped_column(Integer)

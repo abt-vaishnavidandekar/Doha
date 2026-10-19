@@ -11,8 +11,6 @@ from src.modules.course.base.admin.models import Course
 
 
 
-
-
 async def get_course(current_user, db:AsyncSession):
     try:
         result = await db.execute(select(Course))
@@ -36,7 +34,8 @@ async def get_course(current_user, db:AsyncSession):
             status_code=status.HTTP_200_OK,
             content = {
                 "success" : True,
-                "msg" : "Successfully getting the data"
+                "msg" : "Successfully getting the data",
+                "course" : l1
             }
         )
     
@@ -46,6 +45,5 @@ async def get_course(current_user, db:AsyncSession):
             content={
                 "success": False,
                 "message": "Invalid Credential",
-                "courses" : l1
             },
         )

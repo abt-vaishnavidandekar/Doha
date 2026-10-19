@@ -34,12 +34,60 @@ async def create_batch(data: Create_Batch, current_user, db:AsyncSession):
                 }
             )
 
+        if check_date(data.start_date) == False:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content = {
+                    "success" : False,
+                    "msg" : "Enter a valid date form yyyy:mm:dd"
+                }
+            )
+
+        if check_date(data.end_date) == False:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content = {
+                    "success" : False,
+                    "msg" : "Enter a valid date form yyyy:mm:dd"
+                }
+            )
+
+
+        if check_time(data.starting_time) == False:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content = {
+                    "success" : False,
+                    "msg" : "Enter a valid time form HH:MM:SS"
+                }
+            )       
+
+        if check_time(data.ending_time) == False:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content = {
+                    "success" : False,
+                    "msg" : "Enter a valid time form HH:MM:SS"
+                }
+            )       
+        
+
+        if data.end_date <= data.start_date:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "success": False,
+                    "msg": "Ending date must be after starting date",
+                },
+            )
+        
 
         batch = Batch(
             batch_name = data.batch_name,
-            startdate = check_date(data.date_field),
-            starting_time = check_time(data.starting_time), 
-            ending_time = check_time(data.ending_time),
+            start_date = data.start_date,
+            end_date = data.end_date,
+            starting_time = data.starting_time, 
+            ending_time = data.ending_time,
             seats = data.seats,
             course_id = data.course_id
         )
@@ -55,27 +103,45 @@ async def create_batch(data: Create_Batch, current_user, db:AsyncSession):
                 "msg" : "Successfully created Batch"}
         )
     
+    
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "success": False,
-                "message": "Invalid Credential"
+                "message": "Invalid Credential",
+                "error": str(e),
             },
         )
 
 
 
 async def get_batch(current_user, db:AsyncSession):
+
     try:
         result = await db.execute(select(Batch))
-        batch = result.scalar_one_or_none()
+        batch = result.scalars().all()
+
+        if not batch:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content = {
+                    "success" : False,
+                    "msg" : "Batches doen't exists!"
+                }
+            )
+
+        l1 = []
+
+        for b in batch:
+            l1.extend([b.id, b.batch_name, b.start_date, b.end_date, b.starting_time, b.ending_time, b.seats, b.course_id])
 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content = {
                 "success": True,
-                "msg" : "Data successfully getting",
+                "msg" : "Batches",
+                "batch" : l1,
             },
         )
     
@@ -88,46 +154,77 @@ async def get_batch(current_user, db:AsyncSession):
             },
         )
 
-async def update_batch(batch_id: int, data: Update_Batch,current_user, db: AsyncSession):
 
+
+async def update_batch(
+    batch_id: int,
+    data: Update_Batch,
+    current_user,
+    db: AsyncSession,
+):
     try:
         result = await db.execute(select(Batch).where(Batch.id == batch_id))
         batch = result.scalar_one_or_none()
 
-        if batch is None:
+        if not batch:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
+                content={"success": False, 
+                    "msg": "Batch not found",
+                    }
+            )
+
+        if not check_date(data.start_date) or not check_date(data.end_date):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"success": False,
+                    "msg": "Invalid date format",
+                    }
+            )
+
+        if not check_time(data.starting_time) or not check_time(data.ending_time):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"success": False, "msg": "Invalid time format"},
+            )
+
+        if data.end_date <= data.start_date:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
                 content={
-                    "success" : False,
-                    "msg" : "Batch not found"
-            }
-        )
+                    "success": False,
+                    "msg": "Ending date must be after starting date",
+                },
+            )
 
-        updates = data.model_dump(exclude_unset=True)
+        if not await db.get(Course, data.course_id):
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"success": False, "msg": "Course not found"},
+            )
 
-        for field, value in updates.items():
-            setattr(batch, field, value)
+        batch.batch_name = data.batch_name
+        batch.startdate = data.start_date
+        batch.end_date = data.end_date
+        batch.starting_time = data.starting_time
+        batch.ending_time = data.ending_time
+        batch.seats = data.seats
+        batch.course_id = data.course_id
 
         await db.commit()
         await db.refresh(batch)
 
         return JSONResponse(
-            status_code=status.HTTP_201_CREATED,
-            content={
-                "success" : False,
-                "msg" : "Batch successfully updated"
-            }
+            status_code=status.HTTP_200_OK,
+            content={"success": True, "msg": "Batch updated successfully"},
         )
-    
+
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "success": False,
-                "message": "Invalid Credential"
-            },
+            content={"success": False, "msg": "Failed to update batch"},
         )
-
+        
 
 async def delete_batch(batch_id : int, current_user, db:AsyncSession):
     try:
@@ -143,11 +240,11 @@ async def delete_batch(batch_id : int, current_user, db:AsyncSession):
                 }
             )
 
-        db.delete(batch)
-        await db.refresh(batch)
+        await db.delete(batch)
+        await db.commit()
 
         return JSONResponse(
-            status_code=status.HTTP_204_NO_CONTENT,
+            status_code=status.HTTP_200_OK,
             content = {
                 "success" : True,
                 "msg" : "Batch successfully deleted"

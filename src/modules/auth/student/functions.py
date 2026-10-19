@@ -10,9 +10,9 @@ from src.modules.auth.student.interface import (
     Login_Student,
 )
 from src.modules.auth.student.models import Student
-from utils.jwt import create_access_token, create_refresh_token
-from utils.security import hash_password, verify_password
-from utils.validations import check_phone, validate_email, validate_password
+from src.utils.jwt import create_access_token, create_refresh_token
+from src.utils.security import hash_password, verify_password
+from src.utils.validations import check_phone, validate_email, validate_password
 
 
 async def register_student(data: Create_Student, db:AsyncSession):
@@ -91,9 +91,9 @@ async def login_student(data : Login_Student, db : AsyncSession):
 
         result = await db.execute(select(Student).where(Student.email == data.email))
 
-        user = result.scalar_one_or_none()
+        student = result.scalar_one_or_none()
 
-        if not user:
+        if not student:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
@@ -102,7 +102,7 @@ async def login_student(data : Login_Student, db : AsyncSession):
                 }
             )
         
-        if not verify_password(data.password, user.password):
+        if not verify_password(data.password, student.password):
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
@@ -111,16 +111,16 @@ async def login_student(data : Login_Student, db : AsyncSession):
                 }
             )
 
-        role = "student"
+       
         
-        access_token = create_access_token(Student.id, role),
-        refresh_token = create_refresh_token(Student.id, role)
+        access_token = create_access_token(user_id = student.id, role = "student")
+        refresh_token = create_refresh_token(user_id = student.id, role = "student")
 
         response = JSONResponse(
             status_code=status.HTTP_200_OK,
             content = {
                 "success" : True,
-                "msg" : "Successfully regitered"
+                "msg" : "Successfully LogIn"
             }
         )
 
@@ -179,7 +179,7 @@ async def logout(current_user, db:AsyncSession):
 
         response.delete_cookie(
             key="refresh_token",
-            path="/auth",
+            path="/",
             httponly=True,
             samesite="lax",
         )

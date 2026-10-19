@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.enrollments.base.student.models import Enrollment
-from src.modules.enrollments.base.student.interface import Update_Enrollment
+from src.modules.enrollments.base.admin.interface import Update_Enrollment
 
 from src.utils.validations import check_date, check_time
 

@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from configs.database import get_db
+from src.configs.database import get_db
 from src.modules.auth.admin.models import Admin
 from src.modules.auth.student.models import Student
 from src.configs.env import SECRET_KEY, ALGORITHM
@@ -87,5 +87,5 @@ def get_current_student(current_user = Depends(get_current_user)):
     if not isinstance(current_user, Student):
         raise HTTPException(
             status_code=403,
-            detail="Student Access Required"
+            detail="Unauthorized Access Required"
         )

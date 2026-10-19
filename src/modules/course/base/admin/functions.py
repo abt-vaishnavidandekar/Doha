@@ -114,22 +114,48 @@ async def get_course(current_user, db:AsyncSession):
         )
 
 
-async def update_course(data: Course_Update, current_user, db: AsyncSession, document : UploadFile | None = None):
-
+async def update_course(
+    course_id : int,
+    current_user,
+    db: AsyncSession,
+    data: Course_Update | None = None,
+    document: UploadFile | None = None,
+):
     try:
-        result = await db.execute(select(Course).where(Course.id == data.id))
-        course = result.scalar_one_or_none()
+        course = await db.get(Course, course_id)
 
         if course is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content={
-                    "success" : False,
-                    "msg" : "Course not found"
-            }
+                    "success": False,
+                    "msg": "Course not found",
+                },
+            )
+
+        updates = data.model_dump(
+            exclude_unset=True,
         )
 
-        updates = data.model_dump(exclude_unset=True)
+        allowed_fields = ("name")
+        if isinstance(course, Course):
+            allowed_fields += ("description", "overview")
+
+        for field in allowed_fields:
+            if field in updates:
+                setattr(course, field, updates[field])
+
+        if document and document.filename:
+            await validate_documents(document)
+            await document.seek(0)
+
+            ext = os.path.splitext(document.filename)[1].lower()
+            file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}{ext}")
+
+            with open(file_path, "wb") as f:
+                f.write(await document.read())
+
+            updates["document"] = file_path
 
         for field, value in updates.items():
             setattr(course, field, value)
@@ -138,53 +164,57 @@ async def update_course(data: Course_Update, current_user, db: AsyncSession, doc
         await db.refresh(course)
 
         return JSONResponse(
-            status_code=status.HTTP_201_CREATED,
+            status_code=status.HTTP_200_OK,
             content={
-                "success" : False,
-                "msg" : "Course successfully updated"
-            }
+                "success": True,
+                "msg": "Course successfully updated",
+            },
         )
-    
-    except Exception as e:
+
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "success": False,
-                "message": "Invalid Credential"
+                "msg": "Failed to update course",
             },
         )
-    
 
-async def delete_course(course_id : int, current_user, db:AsyncSession):
+
+async def delete_course(
+    course_id: int,
+    current_user,
+    db: AsyncSession,
+):
     try:
         result = await db.execute(select(Course).where(Course.id == course_id))
         course = result.scalar_one_or_none()
-
-        if not course:
+        
+        if course is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                content = {
-                    "success" : False,
-                    "msg" : "Batch not found"
-                }
+                content={
+                    "success": False,
+                    "msg": "Course not found",
+                },
             )
 
         await db.delete(course)
-        await db.refresh(course)
+        await db.commit()
 
         return JSONResponse(
-            status_code=status.HTTP_204_NO_CONTENT,
-            content = {
-                "success" : True,
-                "msg" : "Course successfully deleted"
-            }
+            status_code=status.HTTP_200_OK,
+            content={
+                "success": True,
+                "msg": "Course successfully deleted",
+            },
         )
 
-    except Exception as e:
+    except Exception:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "success": False,
-                "message": "Invalid Credential"
+                "msg": "Internal server error",
             },
         )

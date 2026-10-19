@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from modules.auth.admin.routes import admin_router
-from modules.batch.base.admin.routes import batch_router
-from modules.course.base.admin.routes import course_router
-from modules.profile.admin.routes import profile_router
-from modules.enrollments.base.admin.routes import enrollment_router
+from src.modules.auth.admin.routes import admin_router
+from src.modules.batch.base.admin.routes import batch_router
+from src.modules.course.base.admin.routes import course_router
+from src.modules.profile.admin.routes import profile_router
+from src.modules.enrollments.base.admin.routes import enrollment_router
 
 router = APIRouter(prefix="/admin")
 

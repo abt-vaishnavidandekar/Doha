@@ -11,27 +11,42 @@ from src.utils.validations import check_phone
 
 
 async def get_student_detail(email : str, db:AsyncSession):
-    result = await db.execute(select(Student).where(Student.email == email))
-    student = result.scalar_one_or_none()
 
-    if not student:
+    try:
+        result = await db.execute(select(Student).where(Student.email == email))
+        student = result.scalar_one_or_none()
+
+
+        if not student:
+            return JSONResponse(
+                status_code = status.HTTP_404_NOT_FOUND,
+                content = {
+                    "sucess" : False,
+                    "msg" : "Student with this email not found"
+                }
+            )
+
+        l1 = []
+
+        for s in student:
+            l1.extend([s.first_name, s.last_name, s.age, s.ph_no, s.email])
+
+
         return JSONResponse(
-            status_code = status.HTTP_404_NOT_FOUND,
-            content = {
-                "sucess" : False,
-                "msg" : "Student with this email not found"
+            status_code=status.HTTP_200_OK,
+            content={
+                "success": True,
+                "msg" : "Data featch successfully",
+                "student" : student
             }
+
         )
 
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "success": True,
-            "msg" : "Data featch successfully",
-            "student" : student
-        }
+    except:
+        import traceback
+        traceback.print_exc()
+        raise
 
-    )
 
 
 

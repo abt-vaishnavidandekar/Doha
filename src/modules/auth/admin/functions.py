@@ -114,7 +114,7 @@ async def login_admin(data : Admin_login, db : AsyncSession):
             status_code=status.HTTP_200_OK,
             content = {
                 "success" : True,
-                "msg" : "Successfully regitered"
+                "msg" : "Successfully LogIn"
             }
         )
 
@@ -175,7 +175,7 @@ async def logout(current_user, db:AsyncSession):
 
         response.delete_cookie(
             key="refresh_token",
-            path="/auth",
+            path="/",
             httponly=True,
             samesite="lax",
         )

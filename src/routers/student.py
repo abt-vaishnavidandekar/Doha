@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from modules.auth.student.routes import student_router
+from src.modules.auth.student.routes import student_router
 from src.modules.profile.student.routes import profile_router
 from src.modules.course.base.student.routes import course_router
 from src.modules.batch.base.student.routes import batch_router

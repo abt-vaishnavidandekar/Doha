@@ -3,9 +3,9 @@ from pydantic import BaseModel
 
 class Create_Batch(BaseModel):
     batch_name : str
-    date_field : str
     start_date : str
     end_date : str
+    starting_time : str
     ending_time : str
     seats : int
     course_id : int

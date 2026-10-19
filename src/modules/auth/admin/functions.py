@@ -13,6 +13,7 @@ from src.utils.jwt import create_access_token, create_refresh_token
 from src.utils.security import hash_password, verify_password
 from src.utils.validations import validate_email, validate_password
 
+#Admin registration
 
 async def register_admin(data: Create_Admin, db: AsyncSession):
 

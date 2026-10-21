@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.utils.role import get_current_admin
 from src.configs.database import get_db
-from src.modules.course.base.admin.functions import course_register, get_course, update_course, delete_course
+from src.modules.course.base.admin.functions import course_register, get_courses, update_course, delete_course
 from src.modules.course.base.admin.interface import Create_Course, Course_Update
 
 course_router = APIRouter(tags=["Course"])
@@ -21,7 +21,7 @@ async def course_register_route(
 
 @course_router.get("/courses")
 async def get_course_route(current_user = Depends(get_current_admin), db:AsyncSession=Depends(get_db)):
-    return await get_course(current_user=current_user, db=db)
+    return await get_courses(current_user=current_user, db=db)
 
 
 @course_router.delete("/course/{course_id}")

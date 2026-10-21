@@ -26,26 +26,49 @@ async def get_student_detail(email : str, db:AsyncSession):
                 }
             )
 
+        print(student)
+
+        '''
+
         l1 = []
 
         for s in student:
-            l1.extend([s.first_name, s.last_name, s.age, s.ph_no, s.email])
+            l1.append({
+                "name" : f"{s.first_name}  {s.last_name}",
+                "age" : s.age, 
+                "ph_no" : s.ph_no, 
+                "email" : s.email
+                })
 
+        '''
 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
                 "success": True,
                 "msg" : "Data featch successfully",
-                "student" : student
+                "student" : {
+                    "id" : student.id,
+                    "name" : f"{student.first_name}  {student.last_name}",
+                    "age" : student.age, 
+                    "ph_no" : student.ph_no, 
+                    "email" : student.email
+                }
+
             }
 
         )
 
-    except:
-        import traceback
-        traceback.print_exc()
-        raise
+    
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "message": "Invalid Credential",
+                "error" : str(e)
+            },
+        )
 
 
 

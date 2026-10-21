@@ -1,11 +1,6 @@
 import re
 from fastapi import HTTPException
 
-def count_enrollments(value):
-    if value >= 10:
-        return False
-    return True
-
 def check_date(value):
     if not re.fullmatch(r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", value):
         return False

@@ -73,7 +73,7 @@ async def course_register(
         )
 
 
-async def get_course(current_user, db:AsyncSession):
+async def get_courses(current_user, db:AsyncSession):
     
     try:
         result = await db.execute(select(Course))
@@ -88,10 +88,14 @@ async def get_course(current_user, db:AsyncSession):
                 }
             )
 
-        l1 = []
+        l2 = []
 
         for c in course: 
-            l1.extend([c.id, c.name, c.description, c.overview]) 
+            l2.append({
+                "course_id" : c.id, 
+                "course_name" : c.name,
+                "description" : c.description, 
+                "overview" : c.overview}) 
 
         
         return JSONResponse(
@@ -99,7 +103,7 @@ async def get_course(current_user, db:AsyncSession):
             content = {
                 "success" : True,
                 "msg" : "Successfully getting the data",
-                "course" : l1
+                "course" : l2
             }
         )
 
@@ -109,7 +113,8 @@ async def get_course(current_user, db:AsyncSession):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "success": False,
-                "message": "Invalid Credential"
+                "message": "Invalid Credential",
+                "error" : str(e)
             },
         )
 

@@ -27,8 +27,8 @@ async def login(data: Login_Student,  db:AsyncSession=Depends(get_db)):
     return await login_student(data=data, db=db)
 
 @student_router.post("/logout")
-async def logout(current_user=Depends(get_current_student), db:AsyncSession=Depends(get_db)):
-    return await logout()
+async def logout_student(current_user=Depends(get_current_student), db:AsyncSession=Depends(get_db)):
+    return await logout(current_user=current_user, db=db)
 
 @student_router.post("/refresh")
 async def refresh_the_token(refresh_token : Request):

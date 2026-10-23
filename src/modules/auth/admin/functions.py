@@ -6,7 +6,7 @@ from fastapi import Request
 from jose import JWTError, jwt
 from src.configs.env import ALGORITHM, SECRET_KEY
 
-from fastapi import HTTPException, status
+from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.utils.jwt import create_access_token, create_refresh_token

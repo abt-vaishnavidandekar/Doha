@@ -157,13 +157,12 @@ async def get_batch(current_user, db:AsyncSession):
 
 
 async def update_batch(
-    batch_id: int,
     data: Update_Batch,
     current_user,
     db: AsyncSession,
 ):
     try:
-        result = await db.execute(select(Batch).where(Batch.id == batch_id))
+        result = await db.execute(select(Batch).where(Batch.id == data.id))
         batch = result.scalar_one_or_none()
 
         if not batch:
@@ -174,21 +173,38 @@ async def update_batch(
                     }
             )
 
-        if not check_date(data.start_date) or not check_date(data.end_date):
+        updates = data.model_dump(exclude_unset=True, exclude={"id"})
+
+        if not updates:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                content={"success": False,
-                    "msg": "Invalid date format",
-                    }
+                content={"success": False, 
+                         "msg": "No fields to update"},
             )
 
-        if not check_time(data.starting_time) or not check_time(data.ending_time):
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"success": False, "msg": "Invalid time format"},
-            )
+        for field in ("start_date", "end_date"):
+            if field in updates and (updates[field] is None or not check_date(updates[field])):
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"success": False, 
+                            "msg": f"Invalid {field} format"
+                        },
+                    )
 
-        if data.end_date <= data.start_date:
+        for field in ("starting_time", "ending_time"):
+            if field in updates and (updates[field] is None or not check_time(updates[field])):
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"success": False, 
+                            "msg": f"Invalid {field} format"
+                        },
+                    )
+
+
+        new_start = updates.get("start_date", batch.start_date)
+        new_end = updates.get("end_date", batch.end_date)
+
+        if new_start and new_end and str(new_end) < str(new_start):
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
@@ -197,32 +213,36 @@ async def update_batch(
                 },
             )
 
-        if not await db.get(Course, data.course_id):
-            return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
-                content={"success": False, "msg": "Course not found"},
-            )
+        if "course_id" in updates:
+            if updates["course_id"] is None or not await db.get(Course, updates["course_id"]):
+                return JSONResponse(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    content={"success": False, "msg": "Course not found"},
+                )
 
-        batch.batch_name = data.batch_name
-        batch.startdate = data.start_date
-        batch.end_date = data.end_date
-        batch.starting_time = data.starting_time
-        batch.ending_time = data.ending_time
-        batch.seats = data.seats
-        batch.course_id = data.course_id
+        for field, value in updates.items():
+            setattr(batch, field, value)
 
         await db.commit()
         await db.refresh(batch)
 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
-            content={"success": True, "msg": "Batch updated successfully"},
+            content={
+                "success": True, 
+                "msg": "Batch updated successfully"
+            },
         )
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"success": False, "msg": "Failed to update batch"},
+            content={
+                "success": False, 
+                "msg": "Failed to update batch"
+            },
         )
         
 
@@ -231,7 +251,7 @@ async def delete_batch(batch_id : int, current_user, db:AsyncSession):
         result = await db.execute(select(Batch).where(Batch.id == batch_id))
         batch = result.scalar_one_or_none()
 
-        if not batch:
+        if batch is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content = {

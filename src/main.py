@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from src.configs.redis import close_redis
 
@@ -20,5 +21,11 @@ app.include_router(student_router)
 
 @app.get("/")
 async def get():
-    return {"msg" : "Api is Working"}
+    return JSONResponse(
+        status_code= status.HTTP_200_OK,
+        content={
+            "success" : True,
+            "msg" : "Api is Working"
+        }
+    )
 

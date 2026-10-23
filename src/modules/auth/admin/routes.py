@@ -1,13 +1,6 @@
-from fastapi import APIRouter, Cookie, Depends, HTTPException
-from sqlalchemy import select
-from src.utils.jwt import SECRET_KEY, ALGORITHM, create_access_token, create_refresh_token
+from fastapi import APIRouter, Depends
 from src.utils.role import get_current_admin
-from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from jose import JWTError, jwt
-from src.modules.auth.admin.models import Admin
-from src.modules.auth.student.models import Student
-from src.modules.auth.admin.interface import RefreshRequest
 from fastapi import Request
 
 from src.configs.database import get_db

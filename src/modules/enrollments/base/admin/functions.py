@@ -53,10 +53,10 @@ async def get_enrollments(current_user, db:AsyncSession):
             },
         )
 
-async def update_enrollments(enrollment_id: int, data: Update_Enrollment,current_user, db: AsyncSession):
+async def update_enrollments(data: Update_Enrollment,current_user, db: AsyncSession):
 
     try:
-        result = await db.execute(select(Enrollment).where(Enrollment.id == enrollment_id))
+        result = await db.execute(select(Enrollment).where(Enrollment.id == data.enrollment_id))
         enrollment = result.scalar_one_or_none()
 
         if enrollment is None:
@@ -93,6 +93,7 @@ async def update_enrollments(enrollment_id: int, data: Update_Enrollment,current
                 "message": "Invalid Credential"
             },
         )
+
 
 
 async def delete_enrollments(enrollment_id : int, current_user, db:AsyncSession):

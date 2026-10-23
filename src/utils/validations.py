@@ -1,17 +1,13 @@
 import re
-from fastapi import HTTPException
 
-def check_date(value):
+def check_date(value ):
     if not re.fullmatch(r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$", value):
         return False
         
     return True
 
-def check_time(value):
-    if not re.fullmatch(r"^([01]\d|2[0-3]):[0-5]\d$", value):
-        return False
-        
-    return True
+def check_time(value: str | None) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", value) is not None
 
 def check_phone(value):
     if not re.fullmatch(r"[6-9]\d{9}", value):

@@ -13,9 +13,9 @@ enrollment_router = APIRouter(tags=["Enrollment"])
 async def get_enrolls(current_user=Depends(get_current_admin), db:AsyncSession=Depends(get_db)):
     return await get_enrollments(current_user=current_user, db=db)
 
-@enrollment_router.put("/enrollment/{enrollment_id}")
-async def update_enrolls(enrollment_id: int, data: Update_Enrollment, current_user = Depends(get_current_admin), db: AsyncSession = Depends(get_current_admin)):
-    return await update_enrollments(enrollment_id=enrollment_id, data=data, current_user=current_user, db=db)
+@enrollment_router.put("/enrollment")
+async def update_enrolls(data: Update_Enrollment, current_user = Depends(get_current_admin), db: AsyncSession = Depends(get_current_admin)):
+    return await update_enrollments(data=data, current_user=current_user, db=db)
 
 
 @enrollment_router.delete("/enrollment/{enrollment_id}")

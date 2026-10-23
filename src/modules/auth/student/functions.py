@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status, Request
+from fastapi import status, Request
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy import select
 from jose import jwt
@@ -28,6 +28,18 @@ async def register_student(data: Create_Student, db:AsyncSession):
                     "msg" : "Student with this email already exists"
                 }
             )
+
+        result = await db.execute(select(Student).where(Student.ph_no == data.ph_no))
+        student = result.scalar_one_or_none()
+
+        if student:
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content = {
+                    "success" : False,
+                    "msg" : "Student with this ph_no already exists"
+                }
+            )          
 
         if check_phone(data.ph_no) == False:
             return JSONResponse(

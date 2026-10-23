@@ -148,9 +148,9 @@ async def available_seat(batch_id:int, current_user, db:AsyncSession):
 
 async def registration_hold_seat(batch_id: int, course_id: int, current_user, db: AsyncSession):
 
-    try:
+    student_id = current_user.id
 
-        student_id = current_user.id  
+    try:
 
         result = await db.execute(select(Batch).where(Batch.id == batch_id))
         batch = result.scalar_one_or_none()
@@ -159,17 +159,19 @@ async def registration_hold_seat(batch_id: int, course_id: int, current_user, db
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content = {
+                    "success" : False,
                     "msg" : "Batch Not found"
                 }
             )
 
-        result = await db.execute(select(Course).where(Course.id == course_id))
+        result = await db.execute(select(Batch).where(Batch.id == batch_id, Batch.course_id == course_id))
         course = result.scalar_one_or_none()
 
         if course is None:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content = {
+                    "success" : False,
                     "msg" : "Course Not found"
                 }
             )
@@ -186,7 +188,7 @@ async def registration_hold_seat(batch_id: int, course_id: int, current_user, db
                 }
             )
 
-        result = await db.execute(select(Enrollment).where(Enrollment.student_id == student_id, Enrollment.batch_id == batch_id))
+        result = await db.execute(select(Enrollment).where(Enrollment.student_id == student_id, Enrollment.batch_id == batch_id, Enrollment.course_id == course_id))
         existing = result.scalar_one_or_none()
 
         if existing:
@@ -194,8 +196,23 @@ async def registration_hold_seat(batch_id: int, course_id: int, current_user, db
                 status_code=status.HTTP_409_CONFLICT,
                 content={
                     "success" : False,
-                    "msg" : "Student already enrolled in this batch"
+                    "msg" : "Student already enrolled in this batch and course"
                 }
+            )
+
+        result = await db.execute(select(Enrollment).where(Enrollment.batch_id == batch_id))
+        enrollments = result.scalars().all()
+
+        count = len(enrollments)
+        held_count = await count_batch_holds(batch_id)
+
+        if count + held_count >= batch.seats:
+            return JSONResponse(
+                status_code=status.HTTP_409_CONFLICT,
+                content={
+                    "success": False,
+                    "msg": "No seats available for enrollment.",
+                },
             )
 
         result = await seat_hold(student_id, batch_id)
@@ -245,6 +262,7 @@ async def confirm_enrollment(batch_id: int, course_id: int, current_user, db: As
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content = {
+                    "success" : False,
                     "msg" : "Batch Not found"
                 }
             )
@@ -259,9 +277,9 @@ async def confirm_enrollment(batch_id: int, course_id: int, current_user, db: As
             })
 
 
-        result = await db.execute(select(Course).where(Course.id == course_id))
-        course = result.scalars().all()
-
+        result = await db.execute(select(Batch).where(Batch.id == batch_id, Batch.course_id == course_id))
+        course = result.scalar_one_or_none()
+        
         if course is None:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -270,6 +288,9 @@ async def confirm_enrollment(batch_id: int, course_id: int, current_user, db: As
                     "msg" : "This course doesn't belongs to the selected batch"
                 }
             )
+
+        c = await db.execute(select(Course).where(Course.id == course_id))
+        course = c.scalars().all()   
         
         l2 = []
         for c in course:

@@ -1,6 +1,7 @@
 import os
 
 from fastapi import HTTPException, UploadFile
+from fastapi.responses import JSONResponse
 
 UPLOAD_DIR = "uploads/course_docs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)

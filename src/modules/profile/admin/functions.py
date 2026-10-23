@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

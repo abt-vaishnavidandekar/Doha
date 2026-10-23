@@ -30,6 +30,8 @@ async def hold_seat_for_student(batch_id: int, course_id: int, current_user = De
     return await registration_hold_seat(batch_id=batch_id, course_id=course_id, current_user=current_user, db=db)
 
 
-@enrollment_router.post("/enrollment/hold")
+@enrollment_router.post("/enrollment/confirm")
 async def enrollment(batch_id: int, course_id: int, current_user = Depends(get_current_student), db: AsyncSession = Depends(get_db)):
     return await confirm_enrollment(batch_id=batch_id, course_id=course_id, current_user=current_user, db=db)
+
+
